@@ -1,0 +1,6 @@
+credentials.json
+.env
+*.pyc
+random_requests.txt
+venv/
+__pycache__/
