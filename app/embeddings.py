@@ -11,9 +11,14 @@ API_URL = f"https://router.huggingface.co/hf-inference/models/{HF_MODEL}/pipelin
 
 headers = {
     "Authorization": f"Bearer {HF_TOKEN}",
+    "Content-Type": "application/json",
 }
 
+
 def generate_embedding(text: str):
+    if not text.strip():
+        return []
+
     response = requests.post(
         API_URL,
         headers=headers,
@@ -27,10 +32,16 @@ def generate_embedding(text: str):
     if response.status_code != 200:
         raise Exception(f"HF Error: {response.text}")
 
-    embedding = response.json()
+    data = response.json()
 
-    # all-MiniLM returns nested list
-    if isinstance(embedding, list) and isinstance(embedding[0], list):
-        embedding = embedding[0]
+    # Handle nested output from sentence-transformers
+    if isinstance(data, list) and isinstance(data[0], list):
+        embedding = data[0]
+    else:
+        embedding = data
+
+    # Safety check
+    if not isinstance(embedding, list):
+        raise Exception(f"Unexpected HF response format: {data}")
 
     return embedding
